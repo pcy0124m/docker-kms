@@ -39,50 +39,40 @@ Works with:
 
 # COMPOSE ✂️
 ```yaml
+version: "3"
+
 name: "kms"
 
-x-lockdown: &lockdown
-  # prevents write access to the image itself
-  read_only: true
-  # prevents any process within the container to gain more privileges
-  security_opt:
-    - "no-new-privileges=true"
-
 services:
-  server:
+  app:
     image: "11notes/kms:1.0.3"
-    <<: *lockdown
+    container_name: kms-app
     environment:
-      TZ: "Europe/Zurich"
+      TZ: "Asia/Shanghai"
     volumes:
-      - "server.var:/kms/var"
-    networks:
-      frontend:
+      - "var:/kms/var"
     ports:
       - "1688:1688/tcp"
     restart: "always"
 
-  gui:
+  web:
+    image: "11notes/kms-gui:1.0.3"
+    container_name: kms-web
     depends_on:
-      server:
+      app:
         condition: "service_healthy"
         restart: true
-    image: "11notes/kms-gui:1.0.3"
     environment:
-      TZ: "Europe/Zurich"
+      TZ: "Asia/Shanghai"
     volumes:
-      - "server.var:/kms/var"
-    networks:
-      frontend:
+      - "var:/kms/var"
     ports:
       - "3000:3000/tcp"
     restart: "always"
 
 volumes:
-  server.var:
+  var:
 
-networks:
-  frontend:
 ```
 To find out how you can change the default UID/GID of this container image, consult the [RTFM](https://github.com/11notes/RTFM/blob/main/linux/container/image/11notes/how-to.changeUIDGID.md#change-uidgid-the-correct-way).
 
